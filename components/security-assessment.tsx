@@ -654,3 +654,6 @@ export function SecurityAssessmentComponent({ devices }: SecurityAssessmentProps
     </div>
   )
 }
+
+// Add the missing named export
+export { SecurityAssessmentComponent as SecurityAssessment }

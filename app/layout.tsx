@@ -29,12 +29,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body
-        className={`${inter.className} min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800`}
-      >
-        <main className="flex-1">{children}</main>
-        <Footer />
+    <html lang="en" className="scroll-smooth">
+      <body className={`${inter.className} min-h-screen ai-it-gradient antialiased`}>
+        <div className="min-h-screen flex flex-col">
+          <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   )
