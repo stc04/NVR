@@ -12,11 +12,10 @@
 import express, { type Request, type Response } from "express"
 import { createServer } from "http"
 import { Server as SocketIOServer } from "socket.io"
-import cors from "cors"
-import { networkScanner } from "./network-scanner-service"
-import { cameraDiscovery } from "./camera-discovery-service"
-import { deviceManager } from "./device-manager-service"
-import { securityMonitor } from "./security-monitor-service"
+import type { CorsOptions } from "cors"
+
+// Import cors with proper typing
+const cors = require("cors") as (options?: CorsOptions) => express.RequestHandler
 
 const app = express()
 const server = createServer(app)
@@ -35,6 +34,104 @@ app.use(
   }),
 )
 app.use(express.json())
+
+// Mock services for now (will be implemented separately)
+const networkScanner = {
+  async scanRange(range: string, options: { timeout: number }) {
+    // Mock implementation
+    return [
+      {
+        ip: "192.168.1.1",
+        hostname: "router.local",
+        status: "online",
+        type: "router",
+        mac: "00:11:22:33:44:55",
+        vendor: "Cisco",
+        ports: [80, 443],
+        lastSeen: new Date().toISOString(),
+      },
+      {
+        ip: "192.168.1.100",
+        hostname: "camera-01.local",
+        status: "online",
+        type: "camera",
+        mac: "AA:BB:CC:DD:EE:FF",
+        vendor: "Hikvision",
+        ports: [80, 554],
+        lastSeen: new Date().toISOString(),
+      },
+    ]
+  },
+}
+
+const cameraDiscovery = {
+  async discoverCameras(range: string) {
+    // Mock implementation
+    return [
+      {
+        ip: "192.168.1.100",
+        brand: "Hikvision",
+        model: "DS-2CD2142FWD-I",
+        rtspUrl: "rtsp://192.168.1.100:554/Streaming/Channels/101",
+        httpUrl: "http://192.168.1.100",
+        capabilities: ["PTZ", "HTTPS"],
+        status: "online",
+      },
+    ]
+  },
+}
+
+const deviceManager = {
+  async getAllDevices() {
+    // Mock implementation
+    return [
+      {
+        id: "device-001",
+        ip: "192.168.1.100",
+        type: "camera",
+        name: "Front Entrance Camera",
+        authorized: true,
+        lastSeen: new Date().toISOString(),
+      },
+    ]
+  },
+  async authorizeDevice(deviceId: string, authorized: boolean) {
+    // Mock implementation
+    console.log(`Device ${deviceId} ${authorized ? "authorized" : "unauthorized"}`)
+  },
+}
+
+const securityMonitor = {
+  async getSecurityStatus() {
+    // Mock implementation
+    return {
+      overallScore: 85,
+      threatsDetected: 2,
+      devicesMonitored: 15,
+      lastScan: new Date().toISOString(),
+      alerts: [
+        {
+          id: "alert-001",
+          severity: "medium",
+          message: "Unauthorized device detected",
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    }
+  },
+  async getRecentEvents(limit: number) {
+    // Mock implementation
+    return [
+      {
+        id: "event-001",
+        type: "device_connected",
+        message: "New device connected to network",
+        timestamp: new Date().toISOString(),
+        severity: "info",
+      },
+    ]
+  },
+}
 
 // Health check endpoint
 app.get("/health", (req: Request, res: Response) => {
