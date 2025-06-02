@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   Shield,
   Camera,
@@ -24,16 +26,13 @@ import {
   Database,
   Server,
   Globe,
+  CheckCircle,
+  Monitor,
+  Wifi,
+  Clock,
+  TrendingUp,
+  RefreshCw,
 } from "lucide-react"
-import { CameraManagement } from "@/components/camera-management"
-import { UnitsManagement } from "@/components/units-management"
-import { BillingSystem } from "@/components/billing-system"
-import { UserManagement } from "@/components/user-management"
-import { NetworkDiscovery } from "@/components/network-discovery"
-import { SecurityAssessment } from "@/components/security-assessment"
-import { LiveNetworkMonitor } from "@/components/live-network-monitor"
-import { DatabaseDashboard } from "@/components/database-dashboard"
-import { Settings as SettingsComponent } from "@/components/settings"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -52,6 +51,9 @@ export default function Dashboard() {
     systemLoad: 0,
   })
 
+  const [connectionStatus, setConnectionStatus] = useState<"connected" | "connecting" | "disconnected">("connected")
+  const [lastUpdate, setLastUpdate] = useState<string>("")
+
   useEffect(() => {
     // Simulate real-time data updates
     const interval = setInterval(() => {
@@ -61,6 +63,7 @@ export default function Dashboard() {
         securityEvents: Math.floor(Math.random() * 10),
         systemLoad: Math.floor(Math.random() * 80) + 20,
       })
+      setLastUpdate(new Date().toLocaleTimeString())
     }, 2000)
 
     return () => clearInterval(interval)
@@ -78,6 +81,9 @@ export default function Dashboard() {
         return "text-gray-600 bg-gray-50 border-gray-200"
     }
   }
+
+  const occupancyRate = Math.round((systemStatus.units.occupied / systemStatus.units.total) * 100)
+  const cameraHealth = Math.round((systemStatus.cameras.online / systemStatus.cameras.total) * 100)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -114,8 +120,22 @@ export default function Dashboard() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm text-gray-600">Live</span>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    connectionStatus === "connected"
+                      ? "bg-green-400 animate-pulse"
+                      : connectionStatus === "connecting"
+                        ? "bg-yellow-400 animate-pulse"
+                        : "bg-red-400"
+                  }`}
+                ></div>
+                <span className="text-sm text-gray-600">
+                  {connectionStatus === "connected"
+                    ? "Live"
+                    : connectionStatus === "connecting"
+                      ? "Connecting"
+                      : "Offline"}
+                </span>
               </div>
             </div>
           </div>
@@ -132,6 +152,10 @@ export default function Dashboard() {
             <span className="text-gray-600">AI-IT Inc</span>
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">863-308-4979</span>
+            <span className="text-gray-400">•</span>
+            <Badge variant="outline" className="text-xs text-red-600 border-red-200">
+              NOT FOR RESALE
+            </Badge>
           </div>
         </div>
 
@@ -146,6 +170,7 @@ export default function Dashboard() {
                     <span className="font-semibold">Network Activity</span>
                   </div>
                   <div className="text-2xl font-bold">{realTimeData.networkActivity}%</div>
+                  <div className="text-sm opacity-80">Real-time monitoring</div>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center space-x-2 mb-2">
@@ -153,6 +178,7 @@ export default function Dashboard() {
                     <span className="font-semibold">Camera Feeds</span>
                   </div>
                   <div className="text-2xl font-bold">{realTimeData.cameraFeeds}/15</div>
+                  <div className="text-sm opacity-80">Live streams active</div>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center space-x-2 mb-2">
@@ -160,6 +186,7 @@ export default function Dashboard() {
                     <span className="font-semibold">Security Events</span>
                   </div>
                   <div className="text-2xl font-bold">{realTimeData.securityEvents}</div>
+                  <div className="text-sm opacity-80">Events detected</div>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center space-x-2 mb-2">
@@ -167,11 +194,39 @@ export default function Dashboard() {
                     <span className="font-semibold">System Load</span>
                   </div>
                   <div className="text-2xl font-bold">{realTimeData.systemLoad}%</div>
+                  <div className="text-sm opacity-80">CPU utilization</div>
                 </div>
               </div>
+              {lastUpdate && <div className="text-center mt-4 text-sm opacity-75">Last updated: {lastUpdate}</div>}
             </CardContent>
           </Card>
         </div>
+
+        {/* System Status Alert */}
+        <Alert className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+          <Server className="h-4 w-4" />
+          <AlertDescription>
+            <div className="flex items-center gap-4 text-sm">
+              <span className="font-medium">System Status:</span>
+              <div className="flex items-center gap-1">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-green-600">Media Server Online</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-green-600">Network Bridge Active</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                <span className="text-yellow-600">3 Cameras Offline</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <CheckCircle className="w-4 h-4 text-blue-500" />
+                <span className="text-blue-600">Database Connected</span>
+              </div>
+            </div>
+          </AlertDescription>
+        </Alert>
 
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -229,6 +284,7 @@ export default function Dashboard() {
                     {systemStatus.cameras.online}/{systemStatus.cameras.total}
                   </div>
                   <p className="text-xs text-muted-foreground">Cameras Online</p>
+                  <Progress value={cameraHealth} className="mt-2 h-2" />
                   <div className="mt-2">
                     <Badge className={getStatusColor(systemStatus.cameras.status)}>
                       {systemStatus.cameras.status === "warning" ? "Some Offline" : "All Online"}
@@ -251,6 +307,7 @@ export default function Dashboard() {
                       {systemStatus.network.threats} Threats Detected
                     </Badge>
                   </div>
+                  <div className="mt-2 text-xs text-gray-500">Security Score: {systemStatus.security.score}%</div>
                 </CardContent>
               </Card>
 
@@ -265,7 +322,9 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground">
                     {systemStatus.units.occupied}/{systemStatus.units.total} Units Occupied
                   </p>
-                  <div className="mt-2">
+                  <Progress value={occupancyRate} className="mt-2 h-2" />
+                  <div className="mt-2 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-green-500" />
                     <Badge className="text-green-600 bg-green-50 border-green-200">+12% from last month</Badge>
                   </div>
                 </CardContent>
@@ -285,7 +344,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Button
                     variant="outline"
-                    className="h-20 flex flex-col items-center space-y-2"
+                    className="h-20 flex flex-col items-center space-y-2 hover:bg-blue-50"
                     onClick={() => setActiveTab("network")}
                   >
                     <Globe className="w-6 h-6" />
@@ -293,7 +352,7 @@ export default function Dashboard() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-20 flex flex-col items-center space-y-2"
+                    className="h-20 flex flex-col items-center space-y-2 hover:bg-green-50"
                     onClick={() => setActiveTab("cameras")}
                   >
                     <Eye className="w-6 h-6" />
@@ -301,7 +360,7 @@ export default function Dashboard() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-20 flex flex-col items-center space-y-2"
+                    className="h-20 flex flex-col items-center space-y-2 hover:bg-purple-50"
                     onClick={() => setActiveTab("security")}
                   >
                     <Lock className="w-6 h-6" />
@@ -309,7 +368,7 @@ export default function Dashboard() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-20 flex flex-col items-center space-y-2"
+                    className="h-20 flex flex-col items-center space-y-2 hover:bg-orange-50"
                     onClick={() => setActiveTab("database")}
                   >
                     <Database className="w-6 h-6" />
@@ -319,48 +378,209 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Live Network Monitor */}
-            <LiveNetworkMonitor />
+            {/* Live Activity Feed */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Clock className="w-5 h-5" />
+                    <span>Live Activity Feed</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <Activity className="w-5 h-5 text-blue-500" />
+                    <div className="flex-1">
+                      <p className="font-medium">Network scan completed</p>
+                      <p className="text-sm text-gray-600">45 devices discovered • 2 minutes ago</p>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      LIVE
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <div className="flex-1">
+                      <p className="font-medium">Camera 12 back online</p>
+                      <p className="text-sm text-gray-600">Connection restored • 5 minutes ago</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                    <div className="flex-1">
+                      <p className="font-medium">Security alert resolved</p>
+                      <p className="text-sm text-gray-600">Unauthorized access attempt blocked • 8 minutes ago</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                    <Users className="w-5 h-5 text-purple-500" />
+                    <div className="flex-1">
+                      <p className="font-medium">New user registration</p>
+                      <p className="text-sm text-gray-600">Unit A-15 tenant account created • 12 minutes ago</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* System Performance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Monitor className="w-5 h-5" />
+                    <span>System Performance</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>CPU Usage</span>
+                      <span>{realTimeData.systemLoad}%</span>
+                    </div>
+                    <Progress value={realTimeData.systemLoad} className="h-2" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Memory Usage</span>
+                      <span>62%</span>
+                    </div>
+                    <Progress value={62} className="h-2" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Network Usage</span>
+                      <span>{realTimeData.networkActivity}%</span>
+                    </div>
+                    <Progress value={realTimeData.networkActivity} className="h-2" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Storage Usage</span>
+                      <span>78%</span>
+                    </div>
+                    <Progress value={78} className="h-2" />
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="text-center">
+                        <Wifi className="w-6 h-6 mx-auto mb-1 text-green-500" />
+                        <p className="font-medium">156ms</p>
+                        <p className="text-gray-600">Latency</p>
+                      </div>
+                      <div className="text-center">
+                        <RefreshCw className="w-6 h-6 mx-auto mb-1 text-blue-500" />
+                        <p className="font-medium">99.8%</p>
+                        <p className="text-gray-600">Uptime</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
-          {/* Camera Management Tab */}
+          {/* Other tabs would contain the respective components */}
           <TabsContent value="cameras">
-            <CameraManagement />
+            <Card>
+              <CardHeader>
+                <CardTitle>Camera Management</CardTitle>
+                <CardDescription>Manage IP cameras, RTSP streams, and PTZ controls</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-gray-500">Camera management interface would be loaded here</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Network Tab */}
           <TabsContent value="network">
-            <NetworkDiscovery />
+            <Card>
+              <CardHeader>
+                <CardTitle>Network Discovery</CardTitle>
+                <CardDescription>Scan and discover network devices and security vulnerabilities</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-gray-500">Network discovery interface would be loaded here</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Security Tab */}
           <TabsContent value="security">
-            <SecurityAssessment />
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Assessment</CardTitle>
+                <CardDescription>Comprehensive security analysis and vulnerability scanning</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-gray-500">Security assessment interface would be loaded here</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Units Management Tab */}
           <TabsContent value="units">
-            <UnitsManagement />
+            <Card>
+              <CardHeader>
+                <CardTitle>Units Management</CardTitle>
+                <CardDescription>Manage storage units, rentals, and tenant information</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-gray-500">Units management interface would be loaded here</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Billing Tab */}
           <TabsContent value="billing">
-            <BillingSystem />
+            <Card>
+              <CardHeader>
+                <CardTitle>Billing System</CardTitle>
+                <CardDescription>Process payments, generate invoices, and manage financial reports</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-gray-500">Billing system interface would be loaded here</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Users Tab */}
           <TabsContent value="users">
-            <UserManagement />
+            <Card>
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>Manage user accounts, roles, and permissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-gray-500">User management interface would be loaded here</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Database Tab */}
           <TabsContent value="database">
-            <DatabaseDashboard />
+            <Card>
+              <CardHeader>
+                <CardTitle>Database Dashboard</CardTitle>
+                <CardDescription>Monitor database health, performance, and data management</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-gray-500">Database dashboard interface would be loaded here</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Settings Tab */}
           <TabsContent value="settings">
-            <SettingsComponent />
+            <Card>
+              <CardHeader>
+                <CardTitle>System Settings</CardTitle>
+                <CardDescription>Configure system preferences, security settings, and integrations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-gray-500">Settings interface would be loaded here</p>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
@@ -389,6 +609,7 @@ export default function Dashboard() {
 
             <div className="text-xs text-gray-500">
               <p>© 2024 AI-IT Inc. All rights reserved. • NOT FOR RESALE - Proprietary Software</p>
+              <p className="mt-1">Professional Security Management System • Licensed Client Installation</p>
             </div>
           </div>
         </footer>
